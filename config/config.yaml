@@ -1,0 +1,142 @@
+version: "1.0"
+
+system:
+  name: "VisionGuard Intelligent Video Analytics"
+  environment: "production"
+  log_level: "INFO"
+  device: "cpu"
+  cpu_threads: 4
+
+cameras:
+  - id: "cam_01"
+    name: "Main Entrance Camera"
+    source: "0"  # Fallback to synthetic if unavailable
+    enabled: true
+    fps_target: 25.0
+    resolution: [1280, 720]
+    reconnect_interval_sec: 5.0
+    buffer_size: 10
+
+inference:
+  engine: "yolo"  # Options: yolo, onnx
+  model_path: "yolo11n.pt"  # Lightweight nano model for CPU execution
+  confidence_threshold: 0.35
+  iou_threshold: 0.45
+  img_size: 640
+  frame_skip: 1  # Process every frame (or set to 2 to process every 2nd frame)
+  target_classes:
+    - 0   # person
+    - 2   # car
+    - 3   # motorcycle
+    - 5   # bus
+    - 7   # truck
+    - 15  # cat
+    - 16  # dog
+    - 24  # backpack
+    - 26  # handbag
+    - 28  # suitcase
+
+tracking:
+  algorithm: "bytetrack"
+  track_high_thresh: 0.5
+  track_low_thresh: 0.1
+  new_track_thresh: 0.6
+  match_thresh: 0.8
+  track_buffer: 30
+  max_trajectory_length: 50
+  smooth_trajectories: true
+
+regions:
+  - id: "zone_entrance"
+    name: "Entrance Restricted Zone"
+    type: "polygon"
+    points: [[200, 200], [800, 200], [800, 600], [200, 600]]
+    color: [0, 0, 255]
+    enabled: true
+
+  - id: "line_main_gate"
+    name: "Main Gate Counting Line"
+    type: "line"
+    points: [[100, 400], [1100, 400]]
+    direction: "bidirectional"  # Options: left_to_right, right_to_left, bidirectional
+    color: [0, 255, 255]
+    enabled: true
+
+events:
+  plugins:
+    line_crossing:
+      enabled: true
+      cooldown_sec: 2.0
+    
+    region_entry:
+      enabled: true
+      cooldown_sec: 3.0
+
+    region_exit:
+      enabled: true
+      cooldown_sec: 3.0
+
+    intrusion:
+      enabled: true
+      target_zones: ["zone_entrance"]
+      target_classes: ["person", "car"]
+      cooldown_sec: 5.0
+
+    loitering:
+      enabled: true
+      threshold_sec: 5.0
+      target_zones: ["zone_entrance"]
+      cooldown_sec: 10.0
+
+    stationary:
+      enabled: true
+      threshold_sec: 8.0
+      movement_threshold_px: 15.0
+      cooldown_sec: 10.0
+
+    removed_object:
+      enabled: true
+      threshold_sec: 10.0
+      cooldown_sec: 15.0
+
+    abnormal_motion:
+      enabled: true
+      velocity_threshold_px_per_sec: 250.0
+      cooldown_sec: 5.0
+
+    crowd_threshold:
+      enabled: true
+      max_count: 5
+      target_zones: ["zone_entrance"]
+      cooldown_sec: 10.0
+
+recording:
+  enabled: true
+  output_dir: "data/recordings"
+  snapshots_dir: "data/snapshots"
+  continuous: false
+  event_triggered: true
+  pre_event_buffer_sec: 3.0
+  post_event_buffer_sec: 5.0
+  retention_days: 7
+  video_format: "mp4v"
+
+database:
+  url: "sqlite:///data/visionguard.db"
+  echo: false
+  pool_pre_ping: true
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  enable_docs: true
+  cors_origins: ["*"]
+
+dashboard:
+  theme: "dark"
+  refresh_rate_ms: 33  # ~30 FPS UI update rate
+  chart_history_points: 60
+
+metrics:
+  collection_interval_sec: 1.0
+  history_buffer_size: 100
