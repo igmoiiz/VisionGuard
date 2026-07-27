@@ -22,6 +22,6 @@ class BaseTracker(ABC):
         pass
 
     @abstractmethod
-    def reset(a) -> None:
+    def reset(self) -> None:
         """Resets tracker state and tracklet memory."""
         pass

@@ -43,5 +43,5 @@ class MotionAnalytics:
         blended = cv2.addWeighted(base_image, 1.0 - alpha, color_heatmap, alpha, 0)
         return blended
 
-    def get_class_breakdown(a) -> Dict[str, int]:
+    def get_class_breakdown(self) -> Dict[str, int]:
         return dict(self.class_counts)

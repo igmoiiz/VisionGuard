@@ -6,7 +6,7 @@ class FpsCalculator:
     def __init__(self, window_size: int = 30) -> None:
         self.timestamps = deque(maxlen=window_size)
 
-    def tick(() -> None:
+    def tick(self) -> None:
         self.timestamps.append(time.time())
 
     def get_fps(self) -> float:

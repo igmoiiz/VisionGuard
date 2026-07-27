@@ -8,7 +8,7 @@ from typing import Optional
 from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
-    QApplication, QFrame, QHBoxLayout, QLabel, QLineWidth, QListWidget, QListWidgetItem, QMainWindow,
+    QApplication, QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow,
     QStackedWidget, QVBoxLayout, QWidget
 )
 from visionguard.bus.frame_bus import FrameBus

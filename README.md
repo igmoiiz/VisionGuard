@@ -8,10 +8,10 @@ Designed to operate efficiently on modest CPU-only hardware (Intel Core i5, 8GB 
 
 ## 🌟 Key Features & Architecture
 
-* **Shared Core Data Models**: Strongly typed Pydantic v2 objects (`FrameData`, `Detection`, `Track`, `Region`, `Event`, `PerformanceMetrics`) exchanged across all pipeline layers.
-* **CPU-Optimized YOLO11 Inference Engine**: Uses PyTorch thread tuning (`torch.set_num_threads`) and frame skipping to achieve real-time throughput on CPU hardware.
-* **ByteTrack Multi-Object Tracking**: Persistent object tracking across lost frame windows, maintaining trajectory history, velocity vectors, and stationary duration.
-* **Plugin-Based Event Engine**: Modular plugins for 9 distinct event rules:
+- **Shared Core Data Models**: Strongly typed Pydantic v2 objects (`FrameData`, `Detection`, `Track`, `Region`, `Event`, `PerformanceMetrics`) exchanged across all pipeline layers.
+- **CPU-Optimized YOLO11 Inference Engine**: Uses PyTorch thread tuning (`torch.set_num_threads`) and frame skipping to achieve real-time throughput on CPU hardware.
+- **ByteTrack Multi-Object Tracking**: Persistent object tracking across lost frame windows, maintaining trajectory history, velocity vectors, and stationary duration.
+- **Plugin-Based Event Engine**: Modular plugins for 9 distinct event rules:
   1. **Line Crossing**: Directional boundary crossing.
   2. **Region Entry**: Polygon area entry.
   3. **Region Exit**: Polygon area exit.
@@ -21,12 +21,12 @@ Designed to operate efficiently on modest CPU-only hardware (Intel Core i5, 8GB 
   7. **Removed Object**: Unintended disappearance of static items.
   8. **Abnormal Motion**: Velocity and direction anomaly detection.
   9. **Crowd Threshold Alert**: Zone capacity limit violation.
-* **Publish/Subscribe Frame Bus**: Asynchronous message bus decoupling stream ingestion, AI inference, tracking, event processing, recording, and UI/API subscribers.
-* **Modular Annotation Renderer**: Layered OpenCV visual overlays (Regions ➔ Trajectories ➔ Bounding Boxes ➔ Event Alerts ➔ OSD Telemetry).
-* **Automated Recording System**: Event-triggered pre/post ring-buffer recording, snapshot extraction, and disk retention cleanup.
-* **REST API & WebSockets**: FastAPI server providing OpenAPI docs (`/docs`), camera management, event query filters, and WebSocket video streaming.
-* **PySide6 Desktop Dashboard**: Dark-themed PySide6 desktop GUI with 6 dedicated views (Home Live Feed, Analytics Charts, Event Log Browser, Settings, Telemetry Gauges, Live Log Stream).
-* **Automatic Synthetic Stream Fallback**: Automatically activates an animated synthetic video generator when physical webcam hardware is inaccessible.
+- **Publish/Subscribe Frame Bus**: Asynchronous message bus decoupling stream ingestion, AI inference, tracking, event processing, recording, and UI/API subscribers.
+- **Modular Annotation Renderer**: Layered OpenCV visual overlays (Regions ➔ Trajectories ➔ Bounding Boxes ➔ Event Alerts ➔ OSD Telemetry).
+- **Automated Recording System**: Event-triggered pre/post ring-buffer recording, snapshot extraction, and disk retention cleanup.
+- **REST API & WebSockets**: FastAPI server providing OpenAPI docs (`/docs`), camera management, event query filters, and WebSocket video streaming.
+- **PySide6 Desktop Dashboard**: Dark-themed PySide6 desktop GUI with 6 dedicated views (Home Live Feed, Analytics Charts, Event Log Browser, Settings, Telemetry Gauges, Live Log Stream).
+- **Automatic Synthetic Stream Fallback**: Automatically activates an animated synthetic video generator when physical webcam hardware is inaccessible.
 
 ---
 
@@ -99,6 +99,7 @@ VisionGuard/
 ## ⚙️ Installation & Quickstart
 
 ### 1. Activate Environment & Install Dependencies
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -106,16 +107,18 @@ pip install -r requirements.txt
 ```
 
 ### 2. Launch Full Platform (GUI + Pipeline + REST API)
+
 ```bash
 python main.py --mode all
 ```
 
 ### 3. Execution Modes
-* **Full Application (Default)**: `python main.py --mode all`
-* **Desktop Dashboard Only**: `python main.py --mode gui`
-* **REST API Server Only**: `python main.py --mode api`
-* **Headless Analytics Engine**: `python main.py --mode pipeline`
-* **Custom Video Source**: `python main.py --source video.mp4`
+
+- **Full Application (Default)**: `python main.py --mode all`
+- **Desktop Dashboard Only**: `python main.py --mode gui`
+- **REST API Server Only**: `python main.py --mode api`
+- **Headless Analytics Engine**: `python main.py --mode pipeline`
+- **Custom Video Source**: `python main.py --source video.mp4`
 
 ---
 
@@ -123,21 +126,53 @@ python main.py --mode all
 
 When VisionGuard is running, the REST API is served on `http://127.0.0.1:8000`.
 
-* **Interactive Swagger UI Docs**: `http://127.0.0.1:8000/docs`
-* **Health Check**: `GET http://127.0.0.1:8000/api/v1/system/health`
-* **Live Telemetry**: `GET http://127.0.0.1:8000/api/v1/metrics/live`
-* **Event Search**: `GET http://127.0.0.1:8000/api/v1/events`
+- **Interactive Swagger UI Docs**: `http://127.0.0.1:8000/docs`
+- **Health Check**: `GET http://127.0.0.1:8000/api/v1/system/health`
+- **Live Telemetry**: `GET http://127.0.0.1:8000/api/v1/metrics/live`
+- **Event Search**: `GET http://127.0.0.1:8000/api/v1/events`
 
 ---
 
 ## 🧪 Running Unit Tests
 
 Run the `pytest` test suite:
+
 ```bash
 pytest tests/
 ```
 
 ---
 
+---
+
+## Architecture Overview
+
+```
+[ Camera Stream / Synthetic Generator ]
+                 │
+                 ▼
+       [ Stream State Machine ]
+                 │
+                 ▼
+          ┌─────────────┐
+          │  Frame Bus  │ ◄────── (Pub/Sub Event Driven)
+          └──────┬──────┘
+                 │
+     ┌───────────┼───────────────┬────────────────┬──────────────┐
+     ▼           ▼               ▼                ▼              ▼
+[Inference]  [Tracker]    [Event Plugins]    [Recorder]    [Dashboard/API]
+ (YOLO11)  (ByteTrack)    (LineCrossing,      (Buffered)     (PySide6 /
+                         Intrusion, etc.)                  FastAPI WS)
+     │           │               │                │              │
+     └───────────┴───────┬───────┴────────────────┴──────────────┘
+                         ▼
+                [Resource Manager]
+           (Thread Pools, DB, Scheduler)
+                         │
+                         ▼
+             [Annotation Renderer] ──► Annotated Video Output
+```
+
 ## 📄 License
+
 Production Software Architecture — VisionGuard Project.

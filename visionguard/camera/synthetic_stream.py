@@ -73,7 +73,7 @@ class SyntheticVideoStream(BaseStream):
         self.running = False
         self.state_machine.transition_to(CameraState.STOPPED)
 
-    def get_state(a) -> CameraState:
+    def get_state(self) -> CameraState:
         return self.state_machine.current_state
 
     def read_frame(self) -> Optional[FrameData]:
@@ -127,4 +127,4 @@ class SyntheticVideoStream(BaseStream):
             if not self.frame_queue.full():
                 self.frame_queue.put(frame_data)
 
-            elapsed = time.sleep(max(0.001, frame_interval - (time.time() - start_time)))
+            time.sleep(max(0.001, frame_interval - (time.time() - start_time)))

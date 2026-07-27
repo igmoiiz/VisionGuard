@@ -86,7 +86,7 @@ class STrack:
 
         self.trajectory.append(new_centroid)
 
-    def mark_lost(a) -> None:
+    def mark_lost(self) -> None:
         self.time_since_update += 1
         self.state = TrackState.LOST
 
