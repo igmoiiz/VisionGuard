@@ -24,7 +24,7 @@ class LogStreamHandler:
             self.subscribers.remove(callback)
 
     def emit(self, message) -> None:
-        formatted = message.record["formatted"]
+        formatted = str(message)
         for subscriber in self.subscribers:
             try:
                 subscriber(formatted)
@@ -47,7 +47,7 @@ def setup_logger(log_dir: str = "data/logs", level: str = "INFO") -> None:
     # Console sink
     logger.add(
         sys.stderr,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level:<=8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level:<8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
         level=level,
         colorize=True,
         enqueue=True,
@@ -61,7 +61,7 @@ def setup_logger(log_dir: str = "data/logs", level: str = "INFO") -> None:
         rotation="10 MB",
         retention="7 days",
         level=level,
-        format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level:<=8} | {name}:{function}:{line} - {message}",
+        format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level:<8} | {name}:{function}:{line} - {message}",
         enqueue=True,
         encoding="utf-8",
     )
